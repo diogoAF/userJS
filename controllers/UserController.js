@@ -14,32 +14,51 @@ class UserController {
 
             let user = this.getValues()
 
-            this.getPhoto((content) => {
+            let btn = this.formEl.querySelector("[type='submit']")
+            btn.disable = true
+
+            this.getPhoto().then( content => {
                 user.photo = content
                 this.addLine(user)
-            })
-
-        
-            
+                this.formEl.reset()
+                btn.disable = false
+                },
+                (error) => {
+                    console.error(error)
+                }
+            )  
         })
     }
 
-    getPhoto(callback){
-        let fileReader = new FileReader()
+    getPhoto(){
 
-        let arrayOfFormElements = [...this.formEl.elements]
-        let photos = arrayOfFormElements.filter(item => {
-            if (item.name === "photo")
-                return item
+        return new Promise( (resolve, reject) => {
+            let fileReader = new FileReader()
+
+            let arrayOfFormElements = [...this.formEl.elements]
+            let photos = arrayOfFormElements.filter(item => {
+                if (item.name === "photo")
+                    return item
+            })
+
+            let photo = photos[0].files[0]
+
+            fileReader.onload = () => {
+                resolve(fileReader.result)
+            }
+
+            fileReader.onerror = (e) => {
+                reject(e)
+            }
+
+            if(photo){
+                fileReader.readAsDataURL(photo)
+            } else {
+                resolve('dist/img/user4-128x128.jpg')
+            }
+            
         })
-
-        let photo = photos[0].files[0]
-
-        fileReader.onload = () => {
-            callback(fileReader.result)
-        }
-
-        fileReader.readAsDataURL(photo)
+        
     }
 
     getValues(){
@@ -50,7 +69,9 @@ class UserController {
             if(field.name == 'gender'){
                 if(field.checked)
                     user[field.name] = field.value
-            } else {
+            } else if(field.name == 'admin') {
+                user[field.name] = field.checked
+            }else {
                 user[field.name] = field.value
             }
         })
@@ -70,13 +91,13 @@ class UserController {
 
     addLine(dataUser){
         var tr = document.createElement("tr")
-        var currentDate = new Date().toLocaleDateString()
+
         tr.innerHTML = `
                         <td><img src="${dataUser.photo}" alt="User Image" class="img-circle img-sm"></td>
                         <td>${dataUser.name}</td>
                         <td>${dataUser.email}</td>
-                        <td>${dataUser.admin}</td>
-                        <td>${currentDate}</td>
+                        <td>${(dataUser.isAdmin) ? 'Sim' : 'Não'}</td>
+                        <td>${dataUser.register.toLocaleDateString()}</td>
                         <td>
                         <button type="button" class="btn btn-primary btn-xs btn-flat">Editar</button>
                         <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
