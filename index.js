@@ -1,1 +1,1 @@
-var userController = new UserController('form-user-create','table-users-tbody')
+var userController = new UserController('form-user-create', 'form-user-update','table-users-tbody')
