@@ -142,7 +142,7 @@ class UserController {
     }
 
     selectAllUsers(){
-        let users = User.getUsersFromSession()
+        let users = User.getUsersFromStorage()
 
         users.forEach(user => {
             let newUser = new User()
@@ -202,6 +202,9 @@ class UserController {
     addEventsTr(tr){
         tr.querySelector(".btn-delete-user").addEventListener("click", e => {
             if(confirm("Deseja realmente excluir?")){
+                let user = new User()
+                user.loadFromJson(JSON.parse(tr.dataset.user))
+                user.delete()
                 tr.remove()
                 this.udpateUsersStatistics()
             }

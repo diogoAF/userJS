@@ -24,16 +24,27 @@ class User {
 		}
 	}
 
-	static getUsersFromSession(){
+	static getUsersFromStorage(){
         let users = []
         if(localStorage.getItem("users")){
             users = JSON.parse(localStorage.getItem("users"))
         }
         return users
-    }
+	}
+	
+	delete(){
+		let users = User.getUsersFromStorage()
+
+		users.forEach( (user, index) => {
+			if(this.id == user._id){
+				users.splice(index, 1)
+			}
+		})
+		localStorage.setItem("users", JSON.stringify(users))
+	}
 
 	save(){
-		let users = User.getUsersFromSession()
+		let users = User.getUsersFromStorage()
 		if(this.id > 0){
 			users.map(user => {
 				if(user._id == this.id){
@@ -49,8 +60,10 @@ class User {
 	}
 
 	getNewId(){
-		if(!window.id) window.id = 0
-		return ++window.id
+		let lastUsersId = parseInt( localStorage.getItem("lastUsersId") )
+		if(!lastUsersId) lastUsersId = 0
+		localStorage.setItem("lastUsersId", ++lastUsersId)
+		return lastUsersId
 	}
 
 	// GETTERS
