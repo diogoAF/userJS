@@ -1,11 +1,16 @@
 const express = require('express')
-let routesIndex = require('./routes/index.js') 
-let routesUsers = require('./routes/users.js')
+const consign = require('consign')
+const bodyParser = require('body-parser')
 
 let app = express()
+
+app.use(bodyParser.urlencoded({ extended: false}))
+app.use(bodyParser.json())
  
-app.use(routesIndex)
-app.use('/users',routesUsers)
+consign()
+        .include('routes')
+        .include('utils')
+        .into(app)
 
 app.listen(3000, 'localhost', () => {
     console.log('Servidor rodando.....')
