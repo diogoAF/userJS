@@ -4,6 +4,13 @@ let db = new NeDB({
     autoload: true
 })
 
+const { check, validationResult } = require('express-validator')
+// Array contendo os campos que devem e como devem ser validados
+const userArrayFields = [
+                check('name').isAscii().withMessage('Nome inválido.'),
+                check('email').isEmail().withMessage('E-mail inválido.')
+                ]
+
 module.exports = app => {
     let route = app.route('/users')
 
@@ -19,11 +26,13 @@ module.exports = app => {
         })
     })
     
-    route.post((req, res) => {
+    route.post(userArrayFields, (req, res) => {
+        // Valida os campos informados
+        if(!app.utils.validator.user(app, req, res, validationResult)) return false
 
         db.insert(req.body, (err, user) => {
             if(err){
-                app.utils.error.send(err, req, res )
+                app.utils.error.send(err, req, res)
             } else {
                 res.status(200).json(user)
             }
@@ -42,7 +51,10 @@ module.exports = app => {
         })
     })
 
-    routeId.put((req, res) => {
+    routeId.put(userArrayFields, (req, res) => {
+        // Valida os campos informados
+        if(!app.utils.validator.user(app, req, res, validationResult)) return false
+
         db.update({_id: req.params.id}, req.body, err => {
            if(err){
                app.utils.error.send(err, req, res )
