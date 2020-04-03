@@ -142,13 +142,15 @@ class UserController {
     }
 
     selectAllUsers(){
-        let users = User.getUsersFromStorage()
-
-        users.forEach(user => {
-            let newUser = new User()
-            newUser.loadFromJson(user)
-            this.addLine(newUser)
+        HttpRequest.get('/users').then( data => {
+            data.users.forEach(user => {
+                let newUser = new User()
+                newUser.loadFromJson(user)
+                this.addLine(newUser)
+            })
         })
+
+        
     }
 
     getTr(dataUser, tr = null){
