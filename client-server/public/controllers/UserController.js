@@ -59,10 +59,12 @@ class UserController {
 
                 this.getPhoto(this.formEl).then( content => {
                     user.photo = content
-                    user.save()
-                    this.addLine(user)
-                    this.formEl.reset()
-                    btn.disable = false
+                    user.save().then(userObject => {
+                        this.addLine(userObject)
+                        this.formEl.reset()
+                        btn.disable = false
+                    });
+                    
                     },
                     (error) => {
                         console.error(error)
@@ -142,7 +144,7 @@ class UserController {
     }
 
     selectAllUsers(){
-        HttpRequest.get('/users').then( data => {
+        User.getUsersFromStorage().then( data => {
             data.users.forEach(user => {
                 let newUser = new User()
                 newUser.loadFromJson(user)
@@ -194,11 +196,12 @@ class UserController {
         let user = new User()
         user.loadFromJson(newUser)
 
-        user.save()
+        user.save().then(userObject => {
+            tr = this.getTr(userObject, tr)
 
-        tr = this.getTr(user, tr)
-
-        this.udpateUsersStatistics()
+            this.udpateUsersStatistics()
+        });
+        
     }
 
     addEventsTr(tr){
@@ -206,9 +209,10 @@ class UserController {
             if(confirm("Deseja realmente excluir?")){
                 let user = new User()
                 user.loadFromJson(JSON.parse(tr.dataset.user))
-                user.delete()
-                tr.remove()
-                this.udpateUsersStatistics()
+                user.delete().then(data => {
+                    tr.remove()
+                    this.udpateUsersStatistics()
+                })
             }
         })
 

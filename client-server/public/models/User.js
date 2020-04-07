@@ -15,6 +15,7 @@ class User {
 	loadFromJson(json){
 		for(let name in json){
 			switch(name){
+				case 'register':
 				case '_register':
 					this[name] = new Date(json[name])
 					break
@@ -25,45 +26,38 @@ class User {
 	}
 
 	static getUsersFromStorage(){
-        let users = []
-        if(localStorage.getItem("users")){
-            users = JSON.parse(localStorage.getItem("users"))
-        }
-        return users
+        return HttpRequest.get('/users')
 	}
 	
 	delete(){
-		let users = User.getUsersFromStorage()
-
-		users.forEach( (user, index) => {
-			if(this.id == user._id){
-				users.splice(index, 1)
-			}
-		})
-		localStorage.setItem("users", JSON.stringify(users))
+		return HttpRequest.delete(`/users/${this.id}`);
 	}
 
 	save(){
-		let users = User.getUsersFromStorage()
-		if(this.id > 0){
-			users.map(user => {
-				if(user._id == this.id){
-					Object.assign(user, this)
-				}
-				return user
-			})
-		} else {
-			this._id = this.getNewId()
-			users.push(this)
-		}
-		localStorage.setItem("users", JSON.stringify(users))
+
+		return new Promise((resolve, reject) => {
+			let promise;
+			if(this.id){
+				promise = HttpRequest.put(`/users/${this.id}`, this.toJSON());
+			} else {
+				promise = HttpRequest.post(`/users/`, this.toJSON());
+			}
+
+			promise.then(data => {
+				this.loadFromJson(data);
+				resolve(this);
+			}).catch(e=>{
+				reject(e);
+			});
+		});
 	}
 
-	getNewId(){
-		let lastUsersId = parseInt( localStorage.getItem("lastUsersId") )
-		if(!lastUsersId) lastUsersId = 0
-		localStorage.setItem("lastUsersId", ++lastUsersId)
-		return lastUsersId
+	toJSON(){
+		let json = {};
+		Object.keys(this).forEach(key => {
+			if(this[key] !== undefined) json[key.replace('_','')] = this[key];
+		});
+		return json
 	}
 
 	// GETTERS
@@ -99,6 +93,9 @@ class User {
 	}
 
 	//SETTERS
+	set id(value){
+		this._id = value
+	}
 	set name(value){
 		this._name = value
 	}
@@ -122,5 +119,8 @@ class User {
 	}
 	set isAdmin(value){
 		this._isAdmin = value
+	}
+	set register(value){
+		this._register = value
 	}
 }
